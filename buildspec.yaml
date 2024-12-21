@@ -1,0 +1,49 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      # Check if Java is installed, if not, install it
+      echo Checking if Java is installed...
+      if ! type java > /dev/null 2>&1; then
+        echo Java is not installed. Installing Java...
+        yum install -y java-17-amazon-corretto
+      else
+        echo Java is already installed.
+      fi
+
+      # Check if Maven is installed, if not, install it
+      echo Checking if Maven is installed...
+      if ! type mvn > /dev/null 2>&1; then
+        echo Maven is not installed. Installing Maven...
+        yum install -y maven
+      else
+        echo Maven is already installed.
+      fi
+
+  pre_build:
+    commands:
+      # Clean and validate the Maven project
+      echo Pre-build phase: Cleaning and validating the project...
+      mvn clean validate
+
+  build:
+    commands:
+      # Build the project to generate the WAR file
+      echo Building the WAR file...
+      mvn clean package -DskipTests
+
+  post_build:
+    commands:
+      # Output the WAR file location
+      echo Build completed successfully. The WAR file is located in the target/ directory.
+      ls -l target/*.war
+
+artifacts:
+  files:
+    # Specify the WAR file to be uploaded as the artifact
+    - target/*.war
+
+cache:
+  paths:
+    - '/root/.m2/**/*'
